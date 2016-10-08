@@ -1,6 +1,6 @@
 import argparse
 import os
-import math
+from math import ceil
 from random import shuffle
 
 __author__ = 'ameya'
@@ -52,8 +52,8 @@ class PerceptronLearn():
                             self.files_dict[os.path.join(current_dir, file_name)] = self.ham_label
                             self.ham_files += 1
             if self.train_less != 0:
-                self.less_spam_files = math.ceil((self.train_less / 100) * self.spam_files)
-                self.less_ham_files = math.ceil((self.train_less / 100) * self.ham_files)
+                self.less_spam_files = ceil((self.train_less / 100) * self.spam_files)
+                self.less_ham_files = ceil((self.train_less / 100) * self.ham_files)
 
         def extract_files(self, dirs, label):
             for a_dir in dirs:
