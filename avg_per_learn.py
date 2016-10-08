@@ -61,9 +61,12 @@ class AvgPerceptronLearn():
             files_dict_keys = list(self.files_dict.keys())
             for i in range(0, self.train_iterations):
                 shuffle(files_dict_keys)
-                self.perceptron_train(files_dict_keys)
+                self.avg_perceptron_train(files_dict_keys)
+            for feature in self.weights:
+                self.weights[feature][1] = self.weights[feature][0] - ((1 / self.counter) * self.weights[feature][1])
+            self.avg_bias = self.bias - ((1 / self.counter) * self.avg_bias)
 
-        def perceptron_train(self, files_dict_keys):
+        def avg_perceptron_train(self, files_dict_keys):
             for file_key in files_dict_keys:
                 with open(os.path.join(file_key), "r", encoding="latin1") as file_handler:
                     file_content = file_handler.read()
@@ -75,29 +78,35 @@ class AvgPerceptronLearn():
                         else:
                             feature_dict[feature] = 1
                         if feature not in self.weights:
+                            # weight of a feature is a list. The first index is standard weight and second index of the
+                            # array is averaged weight
                             self.weights[feature] = [0, 0]
 
                     activation = 0
                     for feature in feature_dict:
-                        activation += (self.weights[feature] * feature_dict[feature])
+                        activation += (self.weights[feature][0] * feature_dict[feature])
                     activation += self.bias
                     file_key_label = self.files_dict[file_key]
                     if file_key_label * activation <= 0:
                         # wrong prediction. Adjust the weights
                         for feature in feature_dict:
-                            self.weights[feature] += (file_key_label * feature_dict[feature])
+                            standard_weight_inc = file_key_label * feature_dict[feature]
+                            self.weights[feature][0] += standard_weight_inc
                             self.bias += file_key_label
+                            self.weights[feature][1] += (standard_weight_inc * self.counter)
+                            self.avg_bias += (file_key_label * self.counter)
+                    self.counter += 1
                     feature_dict.clear()
 
         def write_training_data(self, write_file):
             try:
                 with open(write_file, "w", encoding='latin1') as file_handler:
-                    # the first line is for "bias"
-                    file_handler.write(str(self.bias) + '\n')
-                    # following lines contain weights of features
+                    # the first line is for "average bias"
+                    file_handler.write(str(self.avg_bias) + '\n')
+                    # following lines contain averaged weights of features
                     for weight in self.weights:
                         try:
-                            file_handler.write(str(weight) + ' ' + str(self.weights[weight]) + '\n')
+                            file_handler.write(str(weight) + ' ' + str(self.weights[weight][1]) + '\n')
                         except:
                             print("Exception in writing weights")
                             continue
@@ -134,4 +143,4 @@ if __name__ == '__main__':
     train_instance.set_train_type(args.less, args.iterations, spam_label=-1, ham_label=1)
     train_instance.map_spam_ham_dirs()
     train_instance.train_model()
-    train_instance.write_training_data('avg_per_model.txt')
+    train_instance.write_training_data('per_model.txt')

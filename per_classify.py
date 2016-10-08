@@ -3,7 +3,7 @@ import os
 
 __author__ = 'ameya'
 
-mode = "DEV"
+mode = "PROD"
 
 
 class PerceptronClassify():
@@ -20,7 +20,7 @@ class PerceptronClassify():
             try:
                 with open(model_file, 'r', encoding='latin1') as file_handler:
                     try:
-                        self.bias = int(file_handler.readline())
+                        self.bias = float(file_handler.readline())
                     except ValueError as e:
                         self.bias = 0
                     while True:
@@ -32,7 +32,7 @@ class PerceptronClassify():
                             if line_content[0] in self.weights:
                                 print("duplicate: " + str(line_content[0]))
                             else:
-                                self.weights[line_content[0]] = int(line_content[1])
+                                self.weights[line_content[0]] = float(line_content[1])
                         except:
                             continue
             except (FileNotFoundError, Exception) as e:
