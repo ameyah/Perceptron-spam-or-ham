@@ -4,16 +4,15 @@ import math
 
 __author__ = 'ameya'
 
-mode = "PROD"
+mode = "DEV"
 
 
-class BayesClassify():
-    class __BayesClassify():
+class PerceptronClassify():
+    class __PerceptronClassify():
         def __init__(self):
             self.classify_dir = None
-            self.prob_spam = 0
-            self.prob_ham = 0
-            self.train_data = dict()
+            self.bias = 0
+            self.weights = {}
 
         def set_classify_dir(self, classify_dir):
             self.classify_dir = classify_dir
@@ -21,33 +20,24 @@ class BayesClassify():
         def cache_training_model(self, model_file):
             try:
                 with open(model_file, 'r', encoding='latin1') as file_handler:
-                    prob_spam_line = file_handler.readline()
                     try:
-                        self.prob_spam = float(prob_spam_line)
+                        self.bias = int(file_handler.readline())
                     except ValueError as e:
-                        self.prob_spam = 0
-                    prob_ham_line = file_handler.readline()
-                    try:
-                        self.prob_ham = float(prob_ham_line)
-                    except ValueError as e:
-                        self.prob_ham = 0
+                        self.bias = 0
                     while True:
                         try:
                             line = file_handler.readline()
                             if not line:
                                 break
                             line_content = line.split()
-                            if line_content[0] in self.train_data:
+                            if line_content[0] in self.weights:
                                 print("duplicate: " + str(line_content[0]))
                             else:
-                                self.train_data[str(line_content[0]).strip()] = [float(line_content[1]), float(line_content[2])]
+                                self.weights[line_content[0]] = int(line_content[1])
                         except:
                             continue
             except (FileNotFoundError, Exception) as e:
                 return
-            for data in self.train_data:
-                if float(self.train_data[data][0]) == 0.0 or float(self.train_data[data][1]) == 0.0:
-                    print(data)
 
         def classify_model(self, write_file):
             correct_spam = 0
@@ -64,7 +54,8 @@ class BayesClassify():
                             if file_extension != '.txt':
                                 continue
                             try:
-                                with open(os.path.join(current_dir, file_name), "r", encoding="latin1") as read_file_handler:
+                                with open(os.path.join(current_dir, file_name), "r",
+                                          encoding="latin1") as read_file_handler:
                                     file_content = read_file_handler.read()
                                     tokens = file_content.split()
                                     try:
@@ -91,7 +82,8 @@ class BayesClassify():
                                             correct_spam += 1
                                         elif "ham" in file_name:
                                             total_ham += 1
-                                        write_file_handler.write("spam " + str(os.path.join(current_dir, file_name)) + '\n')
+                                        write_file_handler.write(
+                                            "spam " + str(os.path.join(current_dir, file_name)) + '\n')
                                         classified_spam += 1
                                     elif prob_ham_word > prob_spam_word:
                                         if "ham" in file_name:
@@ -99,13 +91,15 @@ class BayesClassify():
                                             total_ham += 1
                                         elif "spam" in file_name:
                                             total_spam += 1
-                                        write_file_handler.write("ham " + str(os.path.join(current_dir, file_name)) + '\n')
+                                        write_file_handler.write(
+                                            "ham " + str(os.path.join(current_dir, file_name)) + '\n')
                                         classified_ham += 1
                                     else:
                                         # equal, so classify as spam
                                         # print("neither spam or ham: " + str(os.path.join(current_dir, file_name)) + " " + str(
-                                        #    prob_spam_word) + " " + str(prob_ham_word))
-                                        write_file_handler.write("spam " + str(os.path.join(current_dir, file_name)) + '\n')
+                                        # prob_spam_word) + " " + str(prob_ham_word))
+                                        write_file_handler.write(
+                                            "spam " + str(os.path.join(current_dir, file_name)) + '\n')
                             except:
                                 continue
             except:
@@ -128,11 +122,11 @@ class BayesClassify():
                 except ZeroDivisionError as e:
                     ham_recall = float(0)
                 try:
-                    spam_f1 = (2 * spam_precision * spam_recall)/(spam_precision + spam_recall)
+                    spam_f1 = (2 * spam_precision * spam_recall) / (spam_precision + spam_recall)
                 except ZeroDivisionError as e:
                     spam_f1 = float(0)
                 try:
-                    ham_f1 = (2 * ham_precision * ham_recall)/(ham_precision + ham_recall)
+                    ham_f1 = (2 * ham_precision * ham_recall) / (ham_precision + ham_recall)
                 except ZeroDivisionError as e:
                     ham_f1 = float(0)
                 print("spam precision: " + str(spam_precision))
@@ -145,9 +139,9 @@ class BayesClassify():
     __instance = None
 
     def __init__(self):
-        if BayesClassify.__instance is None:
-            BayesClassify.__instance = BayesClassify.__BayesClassify()
-        self.__dict__['BayesClassify__instance'] = BayesClassify.__instance
+        if PerceptronClassify.__instance is None:
+            PerceptronClassify.__instance = PerceptronClassify.__PerceptronClassify()
+        self.__dict__['PerceptronClassify__instance'] = PerceptronClassify.__instance
 
     def __getattr__(self, attr):
         return getattr(self.__instance, attr)
@@ -156,15 +150,17 @@ class BayesClassify():
         return setattr(self.__instance, attr, value)
 
 
-def get_classify_dir():
+def get_command_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("input_dir", help='Directory of input development data.')
+    parser.add_argument("output_file", help='Name of output file')
     args = parser.parse_args()
-    return args.input_dir
+    return args
 
 
 if __name__ == '__main__':
-    classify_instance = BayesClassify()
-    classify_instance.set_classify_dir(os.path.abspath(get_classify_dir()))
-    classify_instance.cache_training_model('nbmodel.txt')
-    classify_instance.classify_model('nboutput.txt')
+    classify_instance = PerceptronClassify()
+    args = get_command_args()
+    classify_instance.set_classify_dir(os.path.abspath(args.input_dir))
+    classify_instance.cache_training_model('per_model.txt')
+    classify_instance.classify_model(args.output_file)
