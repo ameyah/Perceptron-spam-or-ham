@@ -1,6 +1,5 @@
 import argparse
 import os
-import math
 
 __author__ = 'ameya'
 
@@ -57,49 +56,34 @@ class PerceptronClassify():
                                 with open(os.path.join(current_dir, file_name), "r",
                                           encoding="latin1") as read_file_handler:
                                     file_content = read_file_handler.read()
-                                    tokens = file_content.split()
-                                    try:
-                                        prob_spam_word = math.log(self.prob_spam)
-                                    except ValueError as e:
-                                        prob_spam_word = 0
-                                    try:
-                                        prob_ham_word = math.log(self.prob_ham)
-                                    except ValueError as e:
-                                        prob_ham_word = 0
-                                    for token in tokens:
-                                        if token in self.train_data:
-                                            try:
-                                                prob_spam_word += math.log(self.train_data[token][0])
-                                            except ValueError as e:
-                                                pass
-                                            try:
-                                                prob_ham_word += math.log(self.train_data[token][1])
-                                            except ValueError as e:
-                                                pass
-                                    if prob_spam_word > prob_ham_word:
-                                        if "spam" in file_name:
-                                            total_spam += 1
-                                            correct_spam += 1
-                                        elif "ham" in file_name:
-                                            total_ham += 1
-                                        write_file_handler.write(
-                                            "spam " + str(os.path.join(current_dir, file_name)) + '\n')
-                                        classified_spam += 1
-                                    elif prob_ham_word > prob_spam_word:
+                                    features = file_content.split()
+                                    activation = 0
+                                    features_dict = {}
+                                    for feature in features:
+                                        if feature in features_dict:
+                                            features_dict[feature] += 1
+                                        else:
+                                            features_dict[feature] = 1
+                                    for feature in features_dict:
+                                        if feature in self.weights:
+                                            activation += (self.weights[feature] * features_dict[feature])
+                                    activation += self.bias
+                                    if "ham" in file_name:
+                                        total_ham += 1
+                                    elif "spam" in file_name:
+                                        total_spam += 1
+                                    if activation > 0:
                                         if "ham" in file_name:
                                             correct_ham += 1
-                                            total_ham += 1
-                                        elif "spam" in file_name:
-                                            total_spam += 1
                                         write_file_handler.write(
                                             "ham " + str(os.path.join(current_dir, file_name)) + '\n')
                                         classified_ham += 1
                                     else:
-                                        # equal, so classify as spam
-                                        # print("neither spam or ham: " + str(os.path.join(current_dir, file_name)) + " " + str(
-                                        # prob_spam_word) + " " + str(prob_ham_word))
+                                        if "spam" in file_name:
+                                            correct_spam += 1
                                         write_file_handler.write(
                                             "spam " + str(os.path.join(current_dir, file_name)) + '\n')
+                                        classified_spam += 1
                             except:
                                 continue
             except:
