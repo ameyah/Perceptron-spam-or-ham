@@ -10,14 +10,8 @@ class PerceptronLearn():
     class __PerceptronLearn():
         def __init__(self):
             self.training_dir = None
-            self.spam_dirs = []
-            self.ham_dirs = []
-            self.total_files = 0
             self.spam_files = 0
             self.ham_files = 0
-            self.train_data = dict()
-            self.spam_words = 0
-            self.ham_words = 0
             self.train_less = 0
             self.less_files = 0
             self.less_spam_files = 0
@@ -49,16 +43,14 @@ class PerceptronLearn():
                     for file_name in filenames:
                         file_extension = os.path.splitext(file_name)[1]
                         if file_extension == ".txt":
-                            self.total_files += 1
+                            self.files_dict[os.path.join(current_dir, file_name)] = self.spam_label
                             self.spam_files += 1
-                    self.spam_dirs.append(current_dir)
                 elif last_dir_name == "ham":
                     for file_name in filenames:
                         file_extension = os.path.splitext(file_name)[1]
                         if file_extension == ".txt":
-                            self.total_files += 1
+                            self.files_dict[os.path.join(current_dir, file_name)] = self.ham_label
                             self.ham_files += 1
-                    self.ham_dirs.append(current_dir)
             if self.train_less != 0:
                 self.less_spam_files = math.ceil((self.train_less / 100) * self.spam_files)
                 self.less_ham_files = math.ceil((self.train_less / 100) * self.ham_files)
@@ -69,8 +61,8 @@ class PerceptronLearn():
                     self.files_dict[os.path.join(a_dir, file_name)] = label
 
         def train_model(self):
-            self.extract_files(self.spam_dirs, self.spam_label)
-            self.extract_files(self.ham_dirs, self.ham_label)
+            # self.extract_files(self.spam_dirs, self.spam_label)
+            # self.extract_files(self.ham_dirs, self.ham_label)
             files_dict_keys = list(self.files_dict.keys())
             for i in range(0, self.train_iterations):
                 shuffle(files_dict_keys)
@@ -105,22 +97,14 @@ class PerceptronLearn():
         def write_training_data(self, write_file):
             try:
                 with open(write_file, "w", encoding='latin1') as file_handler:
-                    if self.total_files == 0:
-                        return
-                    # The first 2 lines are probabilities of spam and ham respectively
-                    file_handler.write(str(self.spam_files / self.total_files) + '\n')
-                    file_handler.write(str(self.ham_files / self.total_files) + '\n')
-                    # Rest of the lines are words followed by their probabilities given spam and ham separated by spaces
-                    for token in self.train_data:
+                    # the first line is for "bias"
+                    file_handler.write(str(self.bias) + '\n')
+                    # following lines contain weights of features
+                    for weight in self.weights:
                         try:
-                            token_spam_add_one = (self.train_data[token][0] + 1) / (
-                            self.spam_words + len(self.train_data))
-                            token_ham_add_one = (self.train_data[token][1] + 1) / (
-                            self.ham_words + len(self.train_data))
-                            file_handler.write(
-                                str(token) + ' ' + str(token_spam_add_one) + ' ' + str(token_ham_add_one) + '\n')
+                            file_handler.write(str(weight) + ' ' + str(self.weights[weight]) + '\n')
                         except:
-                            # print("exception in writing training data")
+                            print("Exception in writing weights")
                             continue
             except:
                 return
