@@ -1,0 +1,36 @@
+Assignment 1 Report
+
+Name: Ameya Hanamsagar
+Email: ahanamsa@usc.edu
+
+1. Performance on the development data with 100% of the training data
+1a. spam precision: 0.993088194636439
+1b. spam recall: 0.9774149659863945
+1c. spam F1 score: 0.9851892484914975
+1d. ham precision: 0.9467265725288831
+1e. ham recall: 0.9833333333333333
+1f. ham F1 score: 0.9646827992151734
+
+2. Performance on the development data with 10% of the training data
+Note: Handled programmatically in nblearn.py with command line argument "-l 10". Upon backtracking which files were used for training, noticed that the files were taken from directory "train/1"
+2a. spam precision: 0.9701739850869926
+2b. spam recall: 0.9559183673469388
+2c. spam F1 score: 0.9629934210526315
+2d. ham precision: 0.8957528957528957
+2e. ham recall: 0.928
+2f. ham F1 score: 0.9115913555992141
+
+3. Description of enhancement(s) you tried (e.g., different approach(es) to smoothing, treating common words differently, dealing with unknown words differently):
+	The approaches tried were -
+	(1) removal of tokens containing only symbols: "?????" was removed while "how?????" wasn't
+	(2) stop words removed (from the trained model)
+	(3) High frequency words removal: removed intersection of top 1% (by word frequency) of words that were common to both spam and ham
+
+4. Best performance results based on enhancements. Note that these could be the same or worse than the standard implementation.
+Note: Handled programmatically in nblearn.py with command line argument "-i 1"
+4a. spam precision: 0.9934354485776805
+4b. spam recall: 0.9882993197278912
+4c. spam F1 score: 0.9908607284135862
+4d. ham precision: 0.9716919025674786
+4e. ham recall: 0.984
+4f. ham F1 score: 0.9778072209340841
