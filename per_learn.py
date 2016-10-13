@@ -19,6 +19,7 @@ class PerceptronLearn():
             self.train_iterations = 0
             self.files_dict = {}
             self.weights = {}
+            self.cache_features = {}
             self.bias = 0
             self.spam_label = -1
             self.ham_label = 1
@@ -70,29 +71,34 @@ class PerceptronLearn():
 
         def perceptron_train(self, files_dict_keys):
             for file_key in files_dict_keys:
-                with open(os.path.join(file_key), "r", encoding="latin1") as file_handler:
-                    file_content = file_handler.read()
-                    features = file_content.split()
-                    feature_dict = {}
-                    for feature in features:
-                        if feature in feature_dict:
-                            feature_dict[feature] += 1
-                        else:
-                            feature_dict[feature] = 1
-                        if feature not in self.weights:
-                            self.weights[feature] = 0
+                features = []
+                try:
+                    features = self.cache_features[file_key]
+                except KeyError as e:
+                    with open(os.path.join(file_key), "r", encoding="latin1") as file_handler:
+                        file_content = file_handler.read()
+                        features = file_content.split()
+                        self.cache_features[file_key] = features
+                feature_dict = {}
+                for feature in features:
+                    try:
+                        feature_dict[feature] += 1
+                    except KeyError as e:
+                        feature_dict[feature] = 1
+                    if feature not in self.weights:
+                        self.weights[feature] = 0
 
-                    activation = 0
+                activation = 0
+                for feature in feature_dict:
+                    activation += (self.weights[feature] * feature_dict[feature])
+                activation += self.bias
+                file_key_label = self.files_dict[file_key]
+                if file_key_label * activation <= 0:
+                    # wrong prediction. Adjust the weights
                     for feature in feature_dict:
-                        activation += (self.weights[feature] * feature_dict[feature])
-                    activation += self.bias
-                    file_key_label = self.files_dict[file_key]
-                    if file_key_label * activation <= 0:
-                        # wrong prediction. Adjust the weights
-                        for feature in feature_dict:
-                            self.weights[feature] += (file_key_label * feature_dict[feature])
-                            self.bias += file_key_label
-                    feature_dict.clear()
+                        self.weights[feature] += (file_key_label * feature_dict[feature])
+                        self.bias += file_key_label
+                feature_dict.clear()
 
         def write_training_data(self, write_file):
             try:
