@@ -19,6 +19,7 @@ class AvgPerceptronLearn():
             self.train_iterations = 0
             self.files_dict = {}
             self.weights = {}
+            self.cache_feature_dict = {}
             self.bias = 0
             self.avg_bias = 0
             self.spam_label = -1
@@ -68,19 +69,23 @@ class AvgPerceptronLearn():
 
         def avg_perceptron_train(self, files_dict_keys):
             for file_key in files_dict_keys:
-                with open(os.path.join(file_key), "r", encoding="latin1") as file_handler:
-                    file_content = file_handler.read()
-                    features = file_content.split()
-                    feature_dict = {}
-                    for feature in features:
-                        if feature in feature_dict:
-                            feature_dict[feature] += 1
-                        else:
-                            feature_dict[feature] = 1
-                        if feature not in self.weights:
-                            # weight of a feature is a list. The first index is standard weight and second index of the
-                            # array is averaged weight
-                            self.weights[feature] = [0, 0]
+                feature_dict = {}
+                try:
+                    feature_dict = self.cache_feature_dict[file_key]
+                except KeyError as e:
+                    with open(os.path.join(file_key), "r", encoding="latin1") as file_handler:
+                        file_content = file_handler.read()
+                        features = file_content.split()
+                        for feature in features:
+                            if feature in feature_dict:
+                                feature_dict[feature] += 1
+                            else:
+                                feature_dict[feature] = 1
+                            if feature not in self.weights:
+                                # weight of a feature is a list. The first index is standard weight and second index of
+                                # the array is averaged weight
+                                self.weights[feature] = [0, 0]
+                        self.cache_feature_dict[file_key] = feature_dict
 
                     activation = 0
                     for feature in feature_dict:

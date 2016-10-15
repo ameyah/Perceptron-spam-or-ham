@@ -19,7 +19,7 @@ class PerceptronLearn():
             self.train_iterations = 0
             self.files_dict = {}
             self.weights = {}
-            self.cache_features = {}
+            self.cache_feature_dict = {}
             self.bias = 0
             self.spam_label = -1
             self.ham_label = 1
@@ -71,22 +71,21 @@ class PerceptronLearn():
 
         def perceptron_train(self, files_dict_keys):
             for file_key in files_dict_keys:
-                features = []
+                feature_dict = {}
                 try:
-                    features = self.cache_features[file_key]
+                    feature_dict = self.cache_feature_dict[file_key]
                 except KeyError as e:
                     with open(os.path.join(file_key), "r", encoding="latin1") as file_handler:
                         file_content = file_handler.read()
                         features = file_content.split()
-                        self.cache_features[file_key] = features
-                feature_dict = {}
-                for feature in features:
-                    try:
-                        feature_dict[feature] += 1
-                    except KeyError as e:
-                        feature_dict[feature] = 1
-                    if feature not in self.weights:
-                        self.weights[feature] = 0
+                        for feature in features:
+                            try:
+                                feature_dict[feature] += 1
+                            except KeyError as e:
+                                feature_dict[feature] = 1
+                            if feature not in self.weights:
+                                self.weights[feature] = 0
+                        self.cache_feature_dict[file_key] = feature_dict
 
                 activation = 0
                 for feature in feature_dict:
