@@ -1,4 +1,5 @@
 import argparse
+from collections import defaultdict
 import os
 from math import ceil
 from random import shuffle
@@ -35,6 +36,16 @@ class PerceptronLearn():
             if kwargs['ham_label']:
                 self.ham_label = kwargs['ham_label']
 
+        def cache_features(self, file_name):
+            feature_dict = defaultdict(int)
+            with open(file_name, "r", encoding="latin1") as file_handler:
+                file_content = file_handler.read()
+                features = file_content.split()
+                for feature in features:
+                    feature_dict[feature] += 1
+                    self.weights[feature] = 0
+            self.cache_feature_dict[file_name] = feature_dict
+
         # procedure to recursively determine all the spam and ham directories
         # and store in spam_dirs and ham_dirs
         def map_spam_ham_dirs(self):
@@ -45,25 +56,20 @@ class PerceptronLearn():
                         file_extension = os.path.splitext(file_name)[1]
                         if file_extension == ".txt":
                             self.files_dict[os.path.join(current_dir, file_name)] = self.spam_label
+                            self.cache_features(os.path.join(current_dir, file_name))
                             self.spam_files += 1
                 elif last_dir_name == "ham":
                     for file_name in filenames:
                         file_extension = os.path.splitext(file_name)[1]
                         if file_extension == ".txt":
                             self.files_dict[os.path.join(current_dir, file_name)] = self.ham_label
+                            self.cache_features(os.path.join(current_dir, file_name))
                             self.ham_files += 1
             if self.train_less != 0:
                 self.less_spam_files = ceil((self.train_less / 100) * self.spam_files)
                 self.less_ham_files = ceil((self.train_less / 100) * self.ham_files)
 
-        def extract_files(self, dirs, label):
-            for a_dir in dirs:
-                for file_name in os.listdir(a_dir):
-                    self.files_dict[os.path.join(a_dir, file_name)] = label
-
         def train_model(self):
-            # self.extract_files(self.spam_dirs, self.spam_label)
-            # self.extract_files(self.ham_dirs, self.ham_label)
             files_dict_keys = list(self.files_dict.keys())
             for i in range(0, self.train_iterations):
                 shuffle(files_dict_keys)
@@ -71,33 +77,17 @@ class PerceptronLearn():
 
         def perceptron_train(self, files_dict_keys):
             for file_key in files_dict_keys:
-                feature_dict = {}
-                try:
-                    feature_dict = self.cache_feature_dict[file_key]
-                except KeyError as e:
-                    with open(os.path.join(file_key), "r", encoding="latin1") as file_handler:
-                        file_content = file_handler.read()
-                        features = file_content.split()
-                        for feature in features:
-                            try:
-                                feature_dict[feature] += 1
-                            except KeyError as e:
-                                feature_dict[feature] = 1
-                            if feature not in self.weights:
-                                self.weights[feature] = 0
-                        self.cache_feature_dict[file_key] = feature_dict
-
+                feature_dict = self.cache_feature_dict[file_key]
                 activation = 0
                 for feature in feature_dict:
                     activation += (self.weights[feature] * feature_dict[feature])
                 activation += self.bias
                 file_key_label = self.files_dict[file_key]
                 if file_key_label * activation <= 0:
-                    # wrong prediction. Adjust the weights
+                    # wrong prediction. Adjust the weightss
                     for feature in feature_dict:
                         self.weights[feature] += (file_key_label * feature_dict[feature])
-                        self.bias += file_key_label
-                feature_dict.clear()
+                    self.bias += file_key_label
 
         def write_training_data(self, write_file):
             try:
