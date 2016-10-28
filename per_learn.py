@@ -35,16 +35,43 @@ class PerceptronLearn():
                 self.spam_label = kwargs['spam_label']
             if kwargs['ham_label']:
                 self.ham_label = kwargs['ham_label']
+            if self.train_less != 0:
+                self.compute_files()
 
-        # procedure to recursively determine all the spam and ham directories
-        # and store in spam_dirs and ham_dirs
-        def map_spam_ham_dirs(self):
+        def compute_files(self):
             for current_dir, dirnames, filenames in os.walk(self.training_dir):
                 last_dir_name = os.path.basename(current_dir)
                 if last_dir_name == "spam":
                     for file_name in filenames:
                         file_extension = os.path.splitext(file_name)[1]
                         if file_extension == ".txt":
+                            self.spam_files += 1
+                elif last_dir_name == "ham":
+                    for file_name in filenames:
+                        file_extension = os.path.splitext(file_name)[1]
+                        if file_extension == ".txt":
+                            self.ham_files += 1
+            if self.train_less != 0:
+                self.less_spam_files = ceil((self.train_less / 100) * self.spam_files)
+                self.less_ham_files = ceil((self.train_less / 100) * self.ham_files)
+                self.spam_files = 0
+                self.ham_files = 0
+
+        # procedure to recursively determine all the spam and ham directories
+        # and store in spam_dirs and ham_dirs
+        def map_spam_ham_dirs(self):
+            for current_dir, dirnames, filenames in os.walk(self.training_dir):
+                if "2" not in current_dir:
+                    continue
+                last_dir_name = os.path.basename(current_dir)
+                if last_dir_name == "spam":
+                    for file_name in filenames:
+                        file_extension = os.path.splitext(file_name)[1]
+                        if file_extension == ".txt":
+                            if self.train_less != 0:
+                                if self.less_spam_files == 0:
+                                    continue
+                                self.less_spam_files -= 1
                             full_file_path = os.path.join(current_dir, file_name)
                             self.files_dict[full_file_path] = self.spam_label
                             # self.cache_features(os.path.join(current_dir, file_name))
@@ -61,6 +88,10 @@ class PerceptronLearn():
                     for file_name in filenames:
                         file_extension = os.path.splitext(file_name)[1]
                         if file_extension == ".txt":
+                            if self.train_less != 0:
+                                if self.less_ham_files == 0:
+                                    continue
+                                self.less_ham_files -= 1
                             full_file_path = os.path.join(current_dir, file_name)
                             self.files_dict[full_file_path] = self.ham_label
                             # self.cache_features(os.path.join(current_dir, file_name))
@@ -73,9 +104,6 @@ class PerceptronLearn():
                                     self.weights[feature] = 0
                             self.cache_feature_dict[full_file_path] = feature_dict
                             self.ham_files += 1
-            if self.train_less != 0:
-                self.less_spam_files = ceil((self.train_less / 100) * self.spam_files)
-                self.less_ham_files = ceil((self.train_less / 100) * self.ham_files)
 
         def train_model(self):
             files_dict_keys = list(self.files_dict.keys())

@@ -1,0 +1,50 @@
+Assignment 2 Report
+
+Name: Ameya Hanamsagar
+
+Part I.
+
+1. Performance of standard perceptron on the development data with 100% of the training data
+1a. spam precision: 0.9866557734204793
+1b. spam recall: 0.9858503401360544
+1c. spam F1 score: 0.9862528923370084
+1d. ham precision: 0.9654025282767797
+1e. ham recall: 0.9673333333333334
+1f. ham F1 score: 0.9663669663669664
+
+2. Performance of averaged perceptron on the development data with 100% of the training data
+2a. spam precision: 0.9858464888405009
+2b. spam recall: 0.985578231292517
+2c. spam F1 score: 0.985712341815213
+2d. ham precision: 0.9646902065289806
+2e. ham recall: 0.9653333333333334
+2f. ham F1 score: 0.9650116627790736
+
+Part II.
+
+3. Performance of standard perceptron on the development data with 10% of the training data
+3a. spam precision: 0.9811163565676201
+3b. spam recall: 0.9613605442176871
+3c. spam F1 score: 0.9711379879054426
+3d. ham precision: 0.9097839898348158
+3e. ham recall: 0.9546666666666667
+3f. ham F1 score: 0.9316851008458035
+
+4. Performance of averaged perceptron on the development data with 10% of the training data
+4a. spam precision: 0.9782967032967033
+4b. spam recall: 0.9689795918367347
+4c. spam F1 score: 0.973615857826384
+4d. ham precision: 0.9257328990228013
+4e. ham recall: 0.9473333333333334
+4f. ham F1 score: 0.9364085667215816
+
+Part III. You are welcome to reuse code you wrote for assignment 1,
+but we would like to know how you handled the following tasks.
+
+5. How did you calculate precision, recall and F1 score? If you used a
+separate script, please give the name of the script and describe how
+to run it.
+
+6. How did you separate 10% of the training data? If you used a
+separate script, please give the name of the script and describe how
+to run it. Explain how you or your code choose the files.

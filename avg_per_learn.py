@@ -37,18 +37,27 @@ class AvgPerceptronLearn():
                 self.spam_label = kwargs['spam_label']
             if kwargs['ham_label']:
                 self.ham_label = kwargs['ham_label']
+            if self.train_less != 0:
+                self.compute_files()
 
-        def cache_features(self, file_name):
-            feature_dict = defaultdict(int)
-            with open(file_name, "r", encoding="latin1") as file_handler:
-                file_content = file_handler.read()
-                features = file_content.split()
-                for feature in features:
-                    feature_dict[feature] += 1
-                    # weight of a feature is a list. The first index is standard weight and second index of
-                    # the array is averaged weight
-                    self.weights[feature] = [0, 0]
-            self.cache_feature_dict[file_name] = feature_dict
+        def compute_files(self):
+            for current_dir, dirnames, filenames in os.walk(self.training_dir):
+                last_dir_name = os.path.basename(current_dir)
+                if last_dir_name == "spam":
+                    for file_name in filenames:
+                        file_extension = os.path.splitext(file_name)[1]
+                        if file_extension == ".txt":
+                            self.spam_files += 1
+                elif last_dir_name == "ham":
+                    for file_name in filenames:
+                        file_extension = os.path.splitext(file_name)[1]
+                        if file_extension == ".txt":
+                            self.ham_files += 1
+            if self.train_less != 0:
+                self.less_spam_files = ceil((self.train_less / 100) * self.spam_files)
+                self.less_ham_files = ceil((self.train_less / 100) * self.ham_files)
+                self.spam_files = 0
+                self.ham_files = 0
 
         # procedure to recursively determine all the spam and ham directories
         # and store in spam_dirs and ham_dirs
@@ -59,19 +68,40 @@ class AvgPerceptronLearn():
                     for file_name in filenames:
                         file_extension = os.path.splitext(file_name)[1]
                         if file_extension == ".txt":
-                            self.files_dict[os.path.join(current_dir, file_name)] = self.spam_label
-                            self.cache_features(os.path.join(current_dir, file_name))
+                            if self.train_less != 0:
+                                if self.less_spam_files == 0:
+                                    continue
+                                self.less_spam_files -= 1
+                            full_file_path = os.path.join(current_dir, file_name)
+                            self.files_dict[full_file_path] = self.spam_label
+                            feature_dict = defaultdict(int)
+                            with open(full_file_path, "r", encoding="latin1") as file_handler:
+                                file_content = file_handler.read()
+                                features = file_content.split()
+                                for feature in features:
+                                    feature_dict[feature] += 1
+                                    self.weights[feature] = [0, 0]
+                            self.cache_feature_dict[full_file_path] = feature_dict
                             self.spam_files += 1
                 elif last_dir_name == "ham":
                     for file_name in filenames:
                         file_extension = os.path.splitext(file_name)[1]
                         if file_extension == ".txt":
-                            self.files_dict[os.path.join(current_dir, file_name)] = self.ham_label
-                            self.cache_features(os.path.join(current_dir, file_name))
+                            if self.train_less != 0:
+                                if self.less_ham_files == 0:
+                                    continue
+                                self.less_ham_files -= 1
+                            full_file_path = os.path.join(current_dir, file_name)
+                            self.files_dict[full_file_path] = self.ham_label
+                            feature_dict = defaultdict(int)
+                            with open(full_file_path, "r", encoding="latin1") as file_handler:
+                                file_content = file_handler.read()
+                                features = file_content.split()
+                                for feature in features:
+                                    feature_dict[feature] += 1
+                                    self.weights[feature] = [0, 0]
+                            self.cache_feature_dict[full_file_path] = feature_dict
                             self.ham_files += 1
-            if self.train_less != 0:
-                self.less_spam_files = ceil((self.train_less / 100) * self.spam_files)
-                self.less_ham_files = ceil((self.train_less / 100) * self.ham_files)
 
         def train_model(self):
             files_dict_keys = list(self.files_dict.keys())
@@ -141,7 +171,7 @@ def get_command_args():
 if __name__ == '__main__':
     train_instance = AvgPerceptronLearn()
     args = get_command_args()
-    train_instance.set_training_dir(args.input_dir)
+    train_instance.set_training_dir(os.path.abspath(args.input_dir))
     train_instance.set_train_type(args.less, args.iterations, spam_label=-1, ham_label=1)
     train_instance.map_spam_ham_dirs()
     train_instance.train_model()
