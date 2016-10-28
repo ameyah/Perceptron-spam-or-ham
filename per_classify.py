@@ -4,7 +4,7 @@ import os
 
 __author__ = 'ameya'
 
-mode = "DEV"
+mode = "PROD"
 
 
 class PerceptronClassify():

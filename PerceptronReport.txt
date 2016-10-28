@@ -1,6 +1,7 @@
 Assignment 2 Report
 
 Name: Ameya Hanamsagar
+Email: ahanamsa@usc.edu
 
 Part I.
 
@@ -45,6 +46,38 @@ but we would like to know how you handled the following tasks.
 separate script, please give the name of the script and describe how
 to run it.
 
+    First, I calculated the necessary data (counters) required for calculation of precision, recall
+    and F1 score.
+    Note: I chose spam label as -1 and ham label as 1 (value of y in algorithm)
+    # of documents classified as <class>: I just kept a counter and incremented it every time a
+    document is classified as <class> (spam/ham) (if activation > 0, then its ham, otherwise spam)
+    # of documents correctly classified as in <class>: Incremented a counter for document classified
+    as <class> and checked whether that file contains the name of <class>
+    # of documents belonging to <class>: Incremented a counter every time a file belonging to <class>
+    is encountered, determined by whether the name <class> is in file name.
+
+    Precision, Recall and F1 score are calculated using the formulae given in Naive Bayes slides
+    precision = # of documents correctly classified as in <class> / # documents classified as <class>
+    recall = # of documents correctly classified as in <class> / # documents belonging to <class>
+    F1 score of <class> = 2 * precision * recall / (precision + recall)
+
+    Precision, Recall and F1 scores are echoed to standard output when the mode (variable in per_classify.py)
+    is changed to "DEV"
+
+
 6. How did you separate 10% of the training data? If you used a
 separate script, please give the name of the script and describe how
 to run it. Explain how you or your code choose the files.
+
+    The program automatically chooses 10% of the files when provided an additional command-line
+    argument "-l 10" to the per_learn.py or avg_per_learn.py (Here, 10 means we want to consider
+    10% of the training data)
+    For example, python3 per_learn.py train_dir/ -l 10
+
+    When supplied with the '-l' flag, the program first calculates the total number of spam and
+    ham files, and then calculates 10% of the spam/ham files.
+
+    The code chooses files only from the directory 'train/2' which is handled programmatically and
+    is chosen in the order which Ubuntu chose during os.walk. After each spam/ham file is detected
+    during another iteration of os.walk, the 10% file count is decreased by 1 until it becomes 0.
+    This way we know that we have 10% files from both the categories.

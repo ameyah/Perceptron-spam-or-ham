@@ -61,8 +61,9 @@ class PerceptronLearn():
         # and store in spam_dirs and ham_dirs
         def map_spam_ham_dirs(self):
             for current_dir, dirnames, filenames in os.walk(self.training_dir):
-                if "2" not in current_dir:
-                    continue
+                if self.train_less != 0:
+                    if "train/2" not in current_dir:
+                        continue
                 last_dir_name = os.path.basename(current_dir)
                 if last_dir_name == "spam":
                     for file_name in filenames:
