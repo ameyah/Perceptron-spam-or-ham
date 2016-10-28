@@ -1,9 +1,10 @@
 import argparse
+import glob
 import os
 
 __author__ = 'ameya'
 
-mode = "PROD"
+mode = "DEV"
 
 
 class PerceptronClassify():
@@ -48,13 +49,9 @@ class PerceptronClassify():
             try:
                 with open(write_file, "w", encoding='latin1') as write_file_handler:
                     for current_dir, dirnames, filenames in os.walk(self.classify_dir):
-                        for file_name in filenames:
-                            file_extension = os.path.splitext(file_name)[1]
-                            if file_extension != '.txt':
-                                continue
+                        for file_name in glob.glob(os.path.join(current_dir, '*.txt')):
                             try:
-                                with open(os.path.join(current_dir, file_name), "r",
-                                          encoding="latin1") as read_file_handler:
+                                with open(file_name, "r", encoding="latin1") as read_file_handler:
                                     file_content = read_file_handler.read()
                                     features = file_content.split()
                                     activation = 0
@@ -89,6 +86,8 @@ class PerceptronClassify():
             except:
                 return
             if mode == "DEV":
+                print("classified spam: " + str(classified_spam))
+                print("classified ham: " + str(classified_ham))
                 try:
                     spam_precision = correct_spam / classified_spam
                 except ZeroDivisionError as e:
